@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="OMmtdR" name="StreamingDemo" projectType="audioplug" version="1.0.0"
+              bundleIdentifier="com.yourcompany.StreamingDemo" includeBinaryInAppConfig="1"
+              buildVST="1" buildVST3="0" buildAU="0" buildRTAS="0" buildAAX="0"
+              pluginName="StreamingDemo" pluginDesc="StreamingDemo" pluginManufacturer="yourcompany"
+              pluginManufacturerCode="Manu" pluginCode="Plug" pluginChannelConfigs="{0, 1}, {0, 2}"
+              pluginIsSynth="1" pluginWantsMidiIn="1" pluginProducesMidiOut="0"
+              pluginSilenceInIsSilenceOut="0" pluginEditorRequiresKeys="0"
+              pluginAUExportPrefix="StreamingDemoAU" pluginRTASCategory=""
+              aaxIdentifier="com.yourcompany.StreamingDemo" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
+              jucerVersion="3.1.0">
+  <MAINGROUP id="qOCEx5" name="StreamingDemo">
+    <GROUP id="{315DC845-920A-47FA-CE11-F8BE455295A6}" name="Source">
+      <FILE id="hfYPAB" name="StreamingSampler.cpp" compile="1" resource="0"
+            file="Source/StreamingSampler.cpp"/>
+      <FILE id="tzojYS" name="StreamingSampler.h" compile="0" resource="0"
+            file="Source/StreamingSampler.h"/>
+      <FILE id="HmA1wl" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="vRrXHI" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2012 targetFolder="Builds/VisualStudio2012" vstFolder="c:\SDKs\vstsdk2.4">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="1" optimisation="1" targetName="StreamingDemo"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="0" optimisation="2" targetName="StreamingDemo"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_video" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE Github/trunk/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE Github/trunk/modules"/>
+      </MODULEPATHS>
+    </VS2012>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_core" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_events" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_video" showAllCode="1" useLocalCopy="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+</JUCERPROJECT>
