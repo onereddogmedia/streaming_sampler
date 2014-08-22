@@ -69,8 +69,16 @@
 #define BUFFER_SIZE_FOR_STREAM_BUFFERS 11000
 
 // You can set this to 0, if you want to disable background threaded reading. The files will then be read directly in the audio thread,
-// which is not the smartest thing to do...
+// which is not the smartest thing to do, but it comes to good use for debugging.
 #define USE_BACKGROUND_THREAD 1
+
+// By default, every voice adds its output to the supplied buffer. Depending on your architecture, it could be more practical to
+// set (overwrite) the buffer. In this case, set this to 1.
+#if STANDALONE
+#define OVERWRITE_BUFFER_WITH_VOICE_DATA 0
+#else
+#define OVERWRITE_BUFFER_WITH_VOICE_DATA 1
+#endif
 
 /** An object of this class will be thrown if the loading of the sound fails.
 */
@@ -145,6 +153,7 @@ public:
 	*	thread fills the other buffer.
 	*/
 	const AudioSampleBuffer &getPreloadBuffer() const {return preloadBuffer;};
+
 
 	/** The wave file that contains the sample data. It is assumed to be stereo and 44.1kHz 
 	*
@@ -241,7 +250,7 @@ public:
 	/** Resets the loader (unloads the sound). */
 	void reset()
 	{
-		ScopedLock sl();
+		ScopedLock sl(lock);
 		sound = nullptr;
 		diskUsage = 0.0;
 	}
@@ -288,6 +297,8 @@ private:
 	AudioSampleBuffer const *readBuffer;
 	AudioSampleBuffer *writeBuffer;
 
+	double lastPosition;
+
 	// variables for disk usage measurement
 
 	double diskUsage;
@@ -330,7 +341,7 @@ public:
 	};
 
 	/** Clears the note data and resets the loader. */
-	void stopNote (bool allowTailOff)
+	void stopNote (bool /*allowTailOff*/)
 	{ 
 		clearCurrentNote();
 		loader.reset();
@@ -339,16 +350,11 @@ public:
 	/** Adds it's output to the outputBuffer. */
 	void renderNextBlock(AudioSampleBuffer &outputBuffer, int startSample, int numSamples) override;
 
-#if (STANDALONE == 0)
-
 	/** You can pass a pointer with float values containing pitch information for each sample.
 	*
-	*	The array size should be exactly the number of samples that are calculated in the current renderNextBlock method
-	*	This is not used in standalone mode. 
+	*	The array size should be exactly the number of samples that are calculated in the current renderNextBlock method.
 	*/
 	void setPitchValues(const float *pitchDataForBlock)	{ pitchData = pitchDataForBlock; };
-
-#endif
 
 	/** Returns the disk usage of the voice. 
 	*
@@ -367,10 +373,10 @@ public:
 	}
 
 	/** Not implemented */
-	virtual void controllerMoved(int controllerNumber, int controllerValue) override { jassertfalse; };
+	virtual void controllerMoved(int /*controllerNumber*/, int /*controllerValue*/) override { };
 
 	/** Not implemented */
-	virtual void pitchWheelMoved(int pitchWheelValue) override { jassertfalse; };
+	virtual void pitchWheelMoved(int /*pitchWheelValue*/) override { };
 
 	/** resets everything. */
 	void resetVoice()
@@ -382,14 +388,10 @@ public:
 
 private:
 
-#if (STANDALONE == 0)
-
 	const float *pitchData;
 
 	// This lets the wrapper class access the internal data without annoying get/setters
 	friend class ModulatorSamplerVoice; 
-
-#endif
 
 	double voiceUptime;
 	double uptimeDelta;

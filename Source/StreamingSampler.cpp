@@ -46,7 +46,7 @@ void StreamingSamplerSound::setPreloadSize(int newPreloadSize)
 
 	if(newPreloadSize == -1 || preloadSize > maxSize)
 	{
-		preloadSize = maxSize;
+		preloadSize = (int)maxSize;
 	};
 
 	try
@@ -116,6 +116,9 @@ void SampleLoader::startNote(StreamingSamplerSound const *s)
 	// Set the sampleposition to (1 * bufferSize) because the first buffer is the preload buffer
 	positionInSampleFile = bufferSize;
 
+	lastPosition = 0.0;
+
+
 	// The other buffer will be filled on the next free thread pool slot
 	if(!writeBufferIsBeingFilled)
 	{
@@ -126,7 +129,7 @@ void SampleLoader::startNote(StreamingSamplerSound const *s)
 void SampleLoader::fillSampleBlockBuffer(AudioSampleBuffer &sampleBlockBuffer, int numSamples, int sampleIndex)
 {
 	// Since the numSamples is only a estimate, the sampleIndex is used for the exact clock
-	int readIndex = sampleIndex % bufferSize;
+	readIndex = sampleIndex % bufferSize;
 
 	jassert(sound != nullptr);
 
@@ -212,7 +215,7 @@ void SampleLoader::fillInactiveBuffer()
 
 	if(sound->hasEnoughSamplesForBlock(bufferSize + positionInSampleFile))
 	{
-		sound->fillSampleBuffer(*writeBuffer, bufferSize, positionInSampleFile);
+		sound->fillSampleBuffer(*writeBuffer, bufferSize, (int)positionInSampleFile);
 	}
 };
 	
@@ -237,13 +240,11 @@ bool SampleLoader::swapBuffers()
 StreamingSamplerVoice::StreamingSamplerVoice(ThreadPool *pool):
 loader(pool)
 {
-#if STANDALONE == 0
 	pitchData = nullptr;
-#endif
 };
 
 void StreamingSamplerVoice::startNote (int midiNoteNumber, 
-									   float velocity, 
+									   float /*velocity*/, 
 									   SynthesiserSound* s, 
 									   int /*currentPitchWheelPosition*/)
 {
@@ -270,19 +271,18 @@ void StreamingSamplerVoice::renderNextBlock(AudioSampleBuffer &outputBuffer, int
 
 		double numSamplesUsed = voiceUptime - pos;
 
-#if STANDALONE
-
-		for(int i = startSample; i < startSample + numSamples; i++)
-			numSamplesUsed += uptimeDelta;
-
-#else
-		float sumOfPitchValues = 0.0f;
-
-		for(int i = startSample; i < startSample + numSamples; ++i) 
+		if(pitchData != nullptr)
+		{
+			for(int i = startSample; i < startSample + numSamples; ++i) 
 			numSamplesUsed += jmin(uptimeDelta * pitchData[i], (double)MAX_SAMPLER_PITCH);
-#endif
+		}
+		else
+		{
+			for(int i = startSample; i < startSample + numSamples; i++)
+			numSamplesUsed += uptimeDelta;
+		}
 
-		const int samplesToCopy = (int)(numSamplesUsed + 0.99999f); // get one more for linear interpolating
+		const int samplesToCopy = (int)(numSamplesUsed) + 2; // get a few more for linear interpolating
 
 		if( ! sound->hasEnoughSamplesForBlock(pos + samplesToCopy) )
 		{
@@ -292,15 +292,15 @@ void StreamingSamplerVoice::renderNextBlock(AudioSampleBuffer &outputBuffer, int
 
 		loader.fillSampleBlockBuffer(samplesForThisBlock, samplesToCopy, pos);
 	
-		const float const *inL = samplesForThisBlock.getReadPointer(0);
-		const float const *inR = samplesForThisBlock.getReadPointer(1);
+		const float *inL = samplesForThisBlock.getReadPointer(0);
+		const float *inR = samplesForThisBlock.getReadPointer(1);
 
 		float *outL = outputBuffer.getWritePointer(0, startSample);
 		float *outR = outputBuffer.getWritePointer(1, startSample);
 
 		while (--numSamples >= 0)
 		{
-			const float indexFloat = (voiceUptime - pos);
+			const float indexFloat = (float)(voiceUptime - pos);
 			const int index = (int)(indexFloat);
 
 			jassert((index + 1) <= samplesToCopy);
@@ -311,20 +311,15 @@ void StreamingSamplerVoice::renderNextBlock(AudioSampleBuffer &outputBuffer, int
 			float l = inL[index] * invAlpha + inL[index+1] * alpha;
 			float r = inR[index] * invAlpha + inR[index+1] * alpha;
 
-			*outL++ += l;
-			*outR++ += r;
-
-			//outputBuffer.addSample(0, startSample, l);
-			//outputBuffer.addSample(1, startSample, r);
-
-#if STAND_ALONE
-			voiceUptime += uptimeDelta * (double)pitchData[startSample];
-			++startSample;
+#if OVERWRITE_BUFFER_WITH_VOICE_DATA
+			*outL++ = l;
+			*outR++ = r;
 #else
-			voiceUptime += uptimeDelta;
+			*outL++ += l;
+			*outR++ += r;	
 #endif
-		
-			
+			voiceUptime += uptimeDelta * (pitchData == nullptr ? 1.0 : (double)pitchData[startSample]);
+			++startSample;
 		}
 	}
 };

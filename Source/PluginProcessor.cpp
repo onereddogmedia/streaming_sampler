@@ -15,10 +15,7 @@ StreamingDemoAudioProcessor::StreamingDemoAudioProcessor():
 	// Make a simple key map for the sound
 	BigInteger map;
 	map.setRange(0, 127, false);
-	map.setRange(60, 72, true);
-
-	
-	
+	map.setRange(48, 24, true);
 
 	try
 	{
@@ -28,7 +25,7 @@ StreamingDemoAudioProcessor::StreamingDemoAudioProcessor():
 	catch(LoadingError error)
 	{
 		// print the error message if something went wrong
-		DBG("Error loading: " + error.fileName, ": " + error.errorDescription);
+		DBG("Error loading: " + error.fileName + ": " + error.errorDescription);
 
 		jassertfalse;
 		return;
@@ -94,28 +91,28 @@ void StreamingDemoAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
 void StreamingDemoAudioProcessor::releaseResources() {}
 bool StreamingDemoAudioProcessor::hasEditor() const { return false; }
 AudioProcessorEditor* StreamingDemoAudioProcessor::createEditor() { return nullptr; }
-void StreamingDemoAudioProcessor::getStateInformation (MemoryBlock& destData) { }  
-void StreamingDemoAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {}
+void StreamingDemoAudioProcessor::getStateInformation (MemoryBlock& /*destData*/) { }  
+void StreamingDemoAudioProcessor::setStateInformation (const void* /*data*/, int /*sizeInBytes*/) {}
 //==============================================================================
 const String StreamingDemoAudioProcessor::getName() const {    return JucePlugin_Name; }
 int StreamingDemoAudioProcessor::getNumParameters() {    return 0; }
-float StreamingDemoAudioProcessor::getParameter (int index) { return 0.0f; }
-void StreamingDemoAudioProcessor::setParameter (int index, float newValue) { }
-const String StreamingDemoAudioProcessor::getParameterName (int index) {    return String::empty; }
-const String StreamingDemoAudioProcessor::getParameterText (int index) {    return String::empty; }
+float StreamingDemoAudioProcessor::getParameter (int /*index*/) { return 0.0f; }
+void StreamingDemoAudioProcessor::setParameter (int /*index*/, float /*newValue*/) { }
+const String StreamingDemoAudioProcessor::getParameterName (int /*index*/) {    return String::empty; }
+const String StreamingDemoAudioProcessor::getParameterText (int /*index*/) {    return String::empty; }
 const String StreamingDemoAudioProcessor::getInputChannelName (int channelIndex) const {    return String (channelIndex + 1); }
 const String StreamingDemoAudioProcessor::getOutputChannelName (int channelIndex) const {    return String (channelIndex + 1); }
-bool StreamingDemoAudioProcessor::isInputChannelStereoPair (int index) const { return true; }
-bool StreamingDemoAudioProcessor::isOutputChannelStereoPair (int index) const {    return true; }
+bool StreamingDemoAudioProcessor::isInputChannelStereoPair (int /*index*/) const { return true; }
+bool StreamingDemoAudioProcessor::isOutputChannelStereoPair (int /*index*/) const {    return true; }
 bool StreamingDemoAudioProcessor::acceptsMidi() const {   return true; }
 bool StreamingDemoAudioProcessor::producesMidi() const{   return false; }
 bool StreamingDemoAudioProcessor::silenceInProducesSilenceOut() const {    return false;}
 double StreamingDemoAudioProcessor::getTailLengthSeconds() const{    return 0.0;}
 int StreamingDemoAudioProcessor::getNumPrograms(){    return 1;}
 int StreamingDemoAudioProcessor::getCurrentProgram(){    return 0;}
-void StreamingDemoAudioProcessor::setCurrentProgram (int index){}
-const String StreamingDemoAudioProcessor::getProgramName (int index){    return String::empty;}
-void StreamingDemoAudioProcessor::changeProgramName (int index, const String& newName){}
+void StreamingDemoAudioProcessor::setCurrentProgram (int /*index*/){}
+const String StreamingDemoAudioProcessor::getProgramName (int /*index*/){    return String::empty;}
+void StreamingDemoAudioProcessor::changeProgramName (int /*index*/, const String& /*newName*/){}
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {

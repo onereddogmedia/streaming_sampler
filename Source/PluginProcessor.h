@@ -20,7 +20,7 @@ String path("C://piano.wav");
 
 // Set this to 1 to see the disk usage in action. It naively calls DBG() in every processBlock, so
 // only set this to 1 to see how it works and then use StreamingSamplerVoice::getDiskUsage() in a
-// correct way
+// correct way (use a timer to set a slider or something)
 #define DEBUG_DISK_USAGE 0
 
 //==============================================================================
