@@ -7,9 +7,10 @@ It preloads the start of the sample when the sound is loaded and starts filling 
 
 Known limitations:
 
-.wav file support only (will add .aiff later)
-stereo support only
-no resampling ( will be added in upcoming version)
+- .wav file support only (will add .aiff later)
+- stereo support only
+- no resampling ( will be added in upcoming version)
+
 It comes with an example plugin project that shows the usage of this class.
 
 See the doxygen generated API for further documentation
