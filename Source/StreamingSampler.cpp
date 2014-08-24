@@ -111,6 +111,11 @@ void SampleLoader::startNote(StreamingSamplerSound const *s)
 
 	// the read pointer will be pointing directly to the preload buffer of the sample sound
 	readBuffer = &s->getPreloadBuffer();
+
+	// If you hit this assert, you have to increase the buffer size of the preload buffer - it must be at least as big as
+	// the streaming buffers.
+	jassert(readBuffer->getNumSamples() >= bufferSize);
+
 	writeBuffer = &b1;
 
 	// Set the sampleposition to (1 * bufferSize) because the first buffer is the preload buffer
@@ -211,9 +216,7 @@ void SampleLoader::requestNewData()
 
 void SampleLoader::fillInactiveBuffer()
 {
-	jassert(sound != nullptr);
-
-	if(sound->hasEnoughSamplesForBlock(bufferSize + positionInSampleFile))
+	if(sound != nullptr && sound->hasEnoughSamplesForBlock(bufferSize + positionInSampleFile))
 	{
 		sound->fillSampleBuffer(*writeBuffer, bufferSize, (int)positionInSampleFile);
 	}

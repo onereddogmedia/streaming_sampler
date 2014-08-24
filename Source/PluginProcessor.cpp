@@ -62,6 +62,12 @@ void StreamingDemoAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 		// new data about every 32 blocks.
 		v->setLoaderBufferSize(samplesPerBlock * 32);
 	}
+
+	// The preload buffer must be as big as the stream buffer, so whenever you change the stream buffers, 
+	// check that it does not exceed the preload buffer.
+	StreamingSamplerSound *s = dynamic_cast<StreamingSamplerSound*>(synth.getSound(0));
+	s->setPreloadSize(jmax(PRELOAD_SIZE, samplesPerBlock * 32));
+
 }
 
 void StreamingDemoAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
