@@ -131,48 +131,41 @@ void SampleLoader::startNote(StreamingSamplerSound const *s)
 	}
 };
 
-void SampleLoader::fillSampleBlockBuffer(AudioSampleBuffer &sampleBlockBuffer, int numSamples, int sampleIndex)
+void SampleLoader::fillSampleBlockBuffer(AudioSampleBuffer &sampleBlockBuffer, int numSamplesToCopy, int numSamplesToConsume, int sampleIndex)
 {
 	// Since the numSamples is only a estimate, the sampleIndex is used for the exact clock
 	readIndex = sampleIndex % bufferSize;
 
 	jassert(sound != nullptr);
 
-	if(readIndex + numSamples < bufferSize) // Copy all samples from the current read buffer
+	if(readIndex + numSamplesToCopy < bufferSize) // Copy all samples from the current read buffer
 	{
-		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, 0), readBuffer->getReadPointer(0, readIndex), numSamples);
-		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, 0), readBuffer->getReadPointer(1, readIndex), numSamples);
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, 0), readBuffer->getReadPointer(0, readIndex), numSamplesToCopy);
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, 0), readBuffer->getReadPointer(1, readIndex), numSamplesToCopy);
 	}
 
-	else // Copy the samples from the current read buffer, swap the buffers and continue reading
+	else
 	{
+		// copy as much samples from current read buffer as possible
 		const int remainingSamples = bufferSize - readIndex;
+		jassert(remainingSamples <= numSamplesToCopy);
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, 0), readBuffer->getReadPointer(0, readIndex), remainingSamples);
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, 0), readBuffer->getReadPointer(1, readIndex), remainingSamples);
 
-		jassert(remainingSamples <= numSamples);
+		// peek into write buffer for remaining samples
+		jassert(!writeBufferIsBeingFilled); // fails when buffer is currently used by the background thread
+		const int remainingSamplesInWriteBuffer = numSamplesToCopy - remainingSamples;
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, remainingSamples), writeBuffer->getReadPointer(0, 0), remainingSamplesInWriteBuffer);
+		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, remainingSamples), writeBuffer->getReadPointer(1, 0), remainingSamplesInWriteBuffer);
 
-		const float *l = readBuffer->getReadPointer(0, readIndex);
-		const float *r = readBuffer->getReadPointer(1, readIndex);
-
-		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, 0), l, remainingSamples);
-		FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, 0), r, remainingSamples);
-
-		if(swapBuffers()) // Check if the buffer is currently used by the background thread
-		{
-			readIndex = 0;
-
-			const int numSamplesInNewReadBuffer = numSamples - remainingSamples;
-
-			FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(0, remainingSamples), readBuffer->getReadPointer(0, readIndex), numSamplesInNewReadBuffer);
-			FloatVectorOperations::copy(sampleBlockBuffer.getWritePointer(1, remainingSamples), readBuffer->getReadPointer(1, readIndex), numSamplesInNewReadBuffer);
-
-			positionInSampleFile += bufferSize;
-
-			requestNewData();
-		}
-		else
-		{
-			// Oops, The background thread was not quickly enough. Try to increase the preload / buffer size.   
-			jassertfalse;
+		// swap buffers if all samples from current read buffer have been consumed (avoid swapping buffers to early)
+		if (readIndex + numSamplesToConsume >= bufferSize) {
+			if (swapBuffers()) {
+				positionInSampleFile += bufferSize;
+				requestNewData();
+			} else {
+				jassertfalse; // fails when background thread was not quick enough -> increase preload / buffer size
+			}
 		}
 	}
 };
@@ -293,7 +286,7 @@ void StreamingSamplerVoice::renderNextBlock(AudioSampleBuffer &outputBuffer, int
 			return;
 		}
 
-		loader.fillSampleBlockBuffer(samplesForThisBlock, samplesToCopy, pos);
+		loader.fillSampleBlockBuffer(samplesForThisBlock, samplesToCopy, numSamplesUsed, pos);
 	
 		const float *inL = samplesForThisBlock.getReadPointer(0);
 		const float *inR = samplesForThisBlock.getReadPointer(1);
